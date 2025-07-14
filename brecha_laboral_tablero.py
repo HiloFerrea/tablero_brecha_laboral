@@ -2,41 +2,44 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import os
 
-st.set_page_config(page_title="Brecha Laboral", layout="wide")
+st.set_page_config(page_title="Dashboard por Subcategoría", layout="wide")
 
-st.title("Dimensión - Brecha Laboral")
+st.title("Dashboard por Subcategoría - Brecha Laboral")
 
-# Cargar archivo local ya incluido en el repo
-df = pd.read_excel("brecha_laboral_tablero.xlsx", sheet_name="DATOS")
+archivo = "brecha_laboral_tablero.xlsx"
+if not os.path.exists(archivo):
+    st.error(f"⚠️ El archivo '{archivo}' no se encuentra en el repositorio.")
+    st.stop()
+
+df = pd.read_excel(archivo, sheet_name="DATOS")
 
 # Filtros principales
-dimension = st.sidebar.selectbox("Seleccioná una dimensión", sorted(df["DIMENSION"].dropna().unique()))
+subcategoria = st.sidebar.selectbox("Seleccioná una subcategoría", sorted(df["SUBCATEGORIA"].dropna().unique()))
+df_sub = df[df["SUBCATEGORIA"] == subcategoria]
 
-df_dim = df[df["DIMENSION"] == dimension]
-indicadores = df_dim["pestaña"].dropna().unique()
+indicadores = df_sub["pestaña"].dropna().unique()
 indicador = st.sidebar.selectbox("Seleccioná un indicador", sorted(indicadores))
+df_ind = df_sub[df_sub["pestaña"] == indicador]
 
-df_ind = df_dim[df_dim["pestaña"] == indicador]
 anios = df_ind["año"].dropna().unique()
 anio = st.sidebar.selectbox("Seleccioná un año", sorted(anios))
-
-# Filtrado final
 df_filtrado = df_ind[df_ind["año"] == anio]
 
-# Tabla: filas = segmento, columnas = sexo
+# Tabla con columna 'valor'
 tabla = df_filtrado.pivot_table(
-    index="indicador",
+    index="Segmento",
     columns="Sexo",
-    values="valor grafico",
+    values="valor",
     aggfunc="first"
 ).reset_index()
 
-st.subheader("📋 Tabla comparativa por sexo")
+st.subheader("📋 Tabla comparativa por sexo (columna 'valor')")
 st.dataframe(tabla, use_container_width=True)
 
-# Gráfico de barras agrupadas
-st.subheader("📊 Comparación gráfica")
+# Gráfico con columna 'valor grafico'
+st.subheader("📊 Comparación gráfica (columna 'valor grafico')")
 fig = px.bar(
     df_filtrado,
     x="Segmento",
@@ -48,5 +51,4 @@ fig = px.bar(
 )
 fig.update_layout(xaxis_tickangle=-45)
 st.plotly_chart(fig, use_container_width=True)
-
 
