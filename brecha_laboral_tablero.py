@@ -5,7 +5,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Dashboard de Brecha Laboral", layout="wide")
 
-st.title("Dashboard por Dimensión - Brecha Laboral")
+st.title("Dimensión - Brecha Laboral")
 
 # Cargar archivo local ya incluido en el repo
 df = pd.read_excel("brecha_laboral_tablero.xlsx", sheet_name="DATOS")
