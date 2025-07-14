@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 
 st.set_page_config(page_title="Dashboard por Subcategoría", layout="wide")
@@ -26,7 +27,7 @@ anios = df_ind["año"].dropna().unique()
 anio = st.sidebar.selectbox("Seleccioná un año", sorted(anios))
 df_filtrado = df_ind[df_ind["año"] == anio]
 
-# Extraer textos de Titulo, Titulo_grafico y Fuente (primer valor válido)
+# Extraer textos
 titulo_tabla = df_filtrado["Titulo"].dropna().unique()
 titulo_tabla = titulo_tabla[0] if len(titulo_tabla) > 0 else ""
 
@@ -36,9 +37,17 @@ titulo_grafico = titulo_grafico[0] if len(titulo_grafico) > 0 else indicador
 fuente = df_filtrado["Fuente"].dropna().unique()
 fuente = fuente[0] if len(fuente) > 0 else ""
 
-# Tabla con columna 'valor'
+periodo = df_filtrado["GREO_PERIODO"].dropna().unique()
+periodo = periodo[0] if len(periodo) > 0 else ""
+
+# Añadir año y periodo a los títulos
+sufijo = f" — {periodo} (Año {anio})"
+titulo_tabla += sufijo
+titulo_grafico += sufijo
+
+# Tabla con columna 'valor', usando 'indicador' como índice
 tabla = df_filtrado.pivot_table(
-    index="Segmento",
+    index="indicador",
     columns="Sexo",
     values="valor",
     aggfunc="first"
@@ -47,21 +56,37 @@ tabla = df_filtrado.pivot_table(
 st.subheader("📋 " + titulo_tabla)
 st.dataframe(tabla, use_container_width=True)
 
-# Gráfico con columna 'valor grafico'
+# Colores personalizados
+colores_personalizados = {
+    "Mujer": "#006400",  # Verde oscuro
+    "Varón": "#90EE90"   # Verde claro
+}
+
+# Gráfico de barras con plotly.graph_objects
 st.subheader("📊 " + titulo_grafico)
-fig = px.bar(
-    df_filtrado,
-    x="Segmento",
-    y="valor grafico",
-    color="Sexo",
+
+fig = go.Figure()
+
+for sexo in df_filtrado["Sexo"].unique():
+    df_sexo = df_filtrado[df_filtrado["Sexo"] == sexo]
+    fig.add_trace(go.Bar(
+        x=df_sexo["indicador"],
+        y=df_sexo["valor grafico"],
+        name=sexo,
+        marker_color=colores_personalizados.get(sexo, "#CCCCCC")
+    ))
+
+fig.update_layout(
     barmode="group",
-    labels={"valor grafico": "Valor", "Segmento": "Categoría"},
+    xaxis_title="Indicador",
+    yaxis_title="Valor",
+    xaxis_tickangle=-45,
+    legend_title="Sexo"
 )
-fig.update_layout(xaxis_tickangle=-45)
+
 st.plotly_chart(fig, use_container_width=True)
 
 # Fuente
 if fuente:
     st.caption("📌 Fuente: " + fuente)
-
 
