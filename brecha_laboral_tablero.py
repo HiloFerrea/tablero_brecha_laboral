@@ -5,8 +5,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 
-st.set_page_config(page_title="Dashboard por Subcategoría", layout="wide")
-st.title("Dashboard por Subcategoría - Brecha Laboral")
+st.set_page_config(page_title="Dimensión económica", layout="wide")
+st.title("Inserción laboral y brecha salarial")
 
 archivo = "brecha_laboral_tablero.xlsx"
 if not os.path.exists(archivo):
@@ -53,7 +53,7 @@ tabla = df_filtrado.pivot_table(
     aggfunc="first"
 ).reset_index()
 
-st.subheader("📋 " + titulo_tabla)
+st.markdown(f"<p style='font-size:16px; font-weight:bold'>{titulo_tabla}</p>", unsafe_allow_html=True)
 st.dataframe(tabla, use_container_width=True)
 
 # Colores personalizados
@@ -63,7 +63,7 @@ colores_personalizados = {
 }
 
 # Gráfico de barras con plotly.graph_objects
-st.subheader("📊 " + titulo_grafico)
+st.markdown(f"<p style='font-size:16px; font-weight:bold'>{titulo_grafico}</p>", unsafe_allow_html=True)
 
 fig = go.Figure()
 
