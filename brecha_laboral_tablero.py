@@ -26,7 +26,7 @@ df_filtrado = df_ind[df_ind["año"] == anio]
 
 # Tabla: filas = segmento, columnas = sexo
 tabla = df_filtrado.pivot_table(
-    index="Segmento",
+    index="indicador",
     columns="Sexo",
     values="valor grafico",
     aggfunc="first"
