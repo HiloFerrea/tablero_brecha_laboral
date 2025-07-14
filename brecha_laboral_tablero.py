@@ -88,5 +88,5 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Fuente
 if fuente:
-    st.caption("📌 Fuente: " + fuente)
+    st.caption("Fuente: " + fuente)
 
