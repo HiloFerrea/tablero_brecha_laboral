@@ -3,40 +3,50 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Título del dashboard
-st.title("Dashboard de indicadores laborales")
+st.set_page_config(page_title="Dashboard de Brecha Laboral", layout="wide")
 
-# Subir archivo Excel
-archivo = st.file_uploader("Subí el archivo Excel", type=["xlsx"])
+st.title("Dashboard por Dimensión - Brecha Laboral")
 
-if archivo:
-    df = pd.read_excel(archivo, sheet_name="DATOS")
+# Cargar archivo local ya incluido en el repo
+df = pd.read_excel("BRECHA LABORAL_PRUEBA.xlsx", sheet_name="DATOS")
 
-    # Filtros
-    indicador = st.selectbox("Seleccioná un indicador", sorted(df["pestaña"].dropna().unique()))
+# Filtros principales
+dimension = st.sidebar.selectbox("Seleccioná una dimensión", sorted(df["DIMENSION"].dropna().unique()))
 
-    df_filtrado = df[df["pestaña"] == indicador]
+df_dim = df[df["DIMENSION"] == dimension]
+indicadores = df_dim["pestaña"].dropna().unique()
+indicador = st.sidebar.selectbox("Seleccioná un indicador", sorted(indicadores))
 
-    segmentos = df_filtrado["Segmento"].dropna().unique()
-    segmento = st.selectbox("Segmento", sorted(segmentos)) if len(segmentos) > 1 else segmentos[0]
+df_ind = df_dim[df_dim["pestaña"] == indicador]
+anios = df_ind["año"].dropna().unique()
+anio = st.sidebar.selectbox("Seleccioná un año", sorted(anios))
 
-    sexos = df_filtrado["Sexo"].dropna().unique()
-    sexo = st.selectbox("Sexo", sorted(sexos)) if len(sexos) > 1 else sexos[0]
+# Filtrado final
+df_filtrado = df_ind[df_ind["año"] == anio]
 
-    df_final = df_filtrado[
-        (df_filtrado["Segmento"] == segmento) &
-        (df_filtrado["Sexo"] == sexo)
-    ]
+# Tabla: filas = segmento, columnas = sexo
+tabla = df_filtrado.pivot_table(
+    index="Segmento",
+    columns="Sexo",
+    values="valor grafico",
+    aggfunc="first"
+).reset_index()
 
-    # Verificación de datos disponibles
-    if df_final.empty:
-        st.warning("No hay datos para la combinación seleccionada.")
-    else:
-        # Gráfico
-        df_final = df_final.sort_values("año")
-        fig = px.line(df_final, x="año", y="valor grafico", title=indicador)
-        st.plotly_chart(fig)
+st.subheader("📋 Tabla comparativa por sexo")
+st.dataframe(tabla, use_container_width=True)
 
-        # Mostrar tabla
-        st.subheader("Datos utilizados")
-        st.dataframe(df_final[["año", "Sexo", "Segmento", "valor grafico"]])
+# Gráfico de barras agrupadas
+st.subheader("📊 Comparación gráfica")
+fig = px.bar(
+    df_filtrado,
+    x="Segmento",
+    y="valor grafico",
+    color="Sexo",
+    barmode="group",
+    labels={"valor grafico": "Valor", "Segmento": "Categoría"},
+    title=f"{indicador} - Año {anio}"
+)
+fig.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig, use_container_width=True)
+
+
