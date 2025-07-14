@@ -29,7 +29,7 @@ df_filtrado = df_ind[df_ind["año"] == anio]
 
 # Tabla con columna 'valor'
 tabla = df_filtrado.pivot_table(
-    index="Segmento",
+    index="indicador",
     columns="Sexo",
     values="valor",
     aggfunc="first"
