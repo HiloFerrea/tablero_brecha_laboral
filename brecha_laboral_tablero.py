@@ -3,12 +3,12 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Dashboard de Brecha Laboral", layout="wide")
+st.set_page_config(page_title="Brecha Laboral", layout="wide")
 
-st.title("Dashboard por Dimensión - Brecha Laboral")
+st.title("Dimensión - Brecha Laboral")
 
 # Cargar archivo local ya incluido en el repo
-df = pd.read_excel("BRECHA LABORAL_PRUEBA.xlsx", sheet_name="DATOS")
+df = pd.read_excel("brecha_laboral_tablero.xlsx", sheet_name="DATOS")
 
 # Filtros principales
 dimension = st.sidebar.selectbox("Seleccioná una dimensión", sorted(df["DIMENSION"].dropna().unique()))
